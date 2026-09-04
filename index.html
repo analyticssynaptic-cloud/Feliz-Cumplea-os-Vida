@@ -69,18 +69,46 @@
     90%{opacity:.32;}
     100%{transform:translateY(-115vh) translateX(20px) rotate(25deg); opacity:0;}
   }
-  .cat{
-    position:absolute; bottom:-10%; opacity:0;
+  .cat-silhouette{
+    position:absolute; bottom:-12%; opacity:0;
     animation:catFloat linear infinite;
-    user-select:none;
-    filter:drop-shadow(0 3px 6px rgba(214,72,107,.25));
+    user-select:none; pointer-events:none;
   }
+  .cat-silhouette svg{display:block; filter:drop-shadow(0 3px 6px rgba(214,72,107,.18));}
   @keyframes catFloat{
     0%{transform:translate(0,0) rotate(0deg); opacity:0;}
-    12%{opacity:.85;}
-    50%{transform:translate(18px,-58vh) rotate(-8deg);}
-    88%{opacity:.55;}
-    100%{transform:translate(-14px,-115vh) rotate(6deg); opacity:0;}
+    12%{opacity:.7;}
+    50%{transform:translate(18px,-58vh) rotate(-10deg);}
+    88%{opacity:.45;}
+    100%{transform:translate(-14px,-115vh) rotate(8deg); opacity:0;}
+  }
+  .paw{
+    position:absolute; opacity:0; pointer-events:none;
+    animation:pawPulse ease-in-out infinite;
+  }
+  @keyframes pawPulse{
+    0%,100%{opacity:0; transform:scale(.75) rotate(var(--rot,0deg));}
+    50%{opacity:.32; transform:scale(1) rotate(var(--rot,0deg));}
+  }
+  .cat-walk-wrap{
+    position:absolute; bottom:6%; left:0; opacity:.7;
+    animation:walkAcross linear infinite;
+    pointer-events:none;
+  }
+  .cat-walk-wrap.reverse{animation-name:walkAcrossReverse;}
+  .cat-walk-wrap svg{
+    display:block;
+    animation:catBob .45s ease-in-out infinite alternate;
+    filter:drop-shadow(0 4px 8px rgba(214,72,107,.22));
+  }
+  @keyframes catBob{ from{transform:translateY(0);} to{transform:translateY(-3px);} }
+  @keyframes walkAcross{
+    0%{transform:translateX(-15vw) scaleX(1);}
+    100%{transform:translateX(115vw) scaleX(1);}
+  }
+  @keyframes walkAcrossReverse{
+    0%{transform:translateX(115vw) scaleX(-1);}
+    100%{transform:translateX(-15vw) scaleX(-1);}
   }
 
   /* ---------- hero ---------- */
@@ -437,7 +465,13 @@
     { src:"img/foto3.jpg", frase:"Esa sonrisa tuya es mi lugar favorito del mundo." },
     { src:"img/foto4.jpg", frase:"Aquí, como siempre, elegí quedarme a tu lado." },
     { src:"img/foto5.jpg", frase:"Un recuerdo más para la colección de todo lo que te amo." },
-    { src:"img/foto6.jpg", frase:"Contigo, cada momento se convierte en mi favorito." }
+    { src:"img/foto6.jpg", frase:"Contigo, cada momento se convierte en mi favorito." },
+    { src:"img/foto7.jpg", frase:"Ese día aprendí que la felicidad también se fotografía." },
+    { src:"img/foto8.jpg", frase:"Mi versión favorita del tiempo es la que paso contigo." },
+    { src:"img/foto9.jpg", frase:"No hay filtro que mejore lo que ya es perfecto: tú." },
+    { src:"img/foto10.jpg", frase:"Guardo este momento como guardo todo lo tuyo: con cuidado y cariño." },
+    { src:"img/foto11.jpg", frase:"Entre tantas fotos, esta también cuenta nuestra historia." },
+    { src:"img/foto12.jpg", frase:"Y pensar que apenas estamos empezando a coleccionar recuerdos." }
   ];
 
   /* ================= sparkles ================= */
@@ -472,17 +506,74 @@
     h.style.animationDelay = (Math.random()*12)+'s';
     heartsBg.appendChild(h);
   }
-  var catEmojis = ['🐱','🐈','🐈‍⬛'];
+  var catColors = ['#ff7a99','#d6486b','#c98a3e','#ffc3d3'];
+  var catSilhouetteSVG = function(color){
+    return '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="'+color+'">' +
+      '<ellipse cx="12" cy="16" rx="6.5" ry="5.3"/>' +
+      '<circle cx="12" cy="8" r="4.3"/>' +
+      '<path d="M8.2 5 L6.3 1 L10.2 4.2 Z"/>' +
+      '<path d="M15.8 5 L17.7 1 L13.8 4.2 Z"/>' +
+      '<path d="M18.2 14.5c2.6-.2 3.8-2.8 2.6-5.6-.3 2.4-1.7 3.6-3.1 4.1Z"/>' +
+    '</svg>';
+  };
+  var pawSVG =
+    '<svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">' +
+      '<ellipse cx="12" cy="15.3" rx="4.1" ry="3.5"/>' +
+      '<ellipse cx="6.6" cy="10.4" rx="2" ry="2.6" transform="rotate(-24 6.6 10.4)"/>' +
+      '<ellipse cx="10.6" cy="6.6" rx="2" ry="2.6" transform="rotate(-8 10.6 6.6)"/>' +
+      '<ellipse cx="14.6" cy="6.4" rx="2" ry="2.6" transform="rotate(8 14.6 6.4)"/>' +
+      '<ellipse cx="18.2" cy="9.8" rx="2" ry="2.6" transform="rotate(24 18.2 9.8)"/>' +
+    '</svg>';
+  var catWalkSVG =
+    '<svg viewBox="0 0 40 28" width="42" height="30" fill="currentColor">' +
+      '<ellipse cx="17" cy="15" rx="11" ry="6"/>' +
+      '<circle cx="30" cy="9" r="5"/>' +
+      '<path d="M26 5 L24 0 L29 3 Z"/>' +
+      '<path d="M7 11c-5-3-7 3-4 7 2-2 4-5 4-7z"/>' +
+      '<rect x="9" y="20" width="2.6" height="7" rx="1.3"/>' +
+      '<rect x="14" y="20" width="2.6" height="7" rx="1.3"/>' +
+      '<rect x="23" y="20" width="2.6" height="7" rx="1.3"/>' +
+      '<rect x="28" y="20" width="2.6" height="7" rx="1.3"/>' +
+    '</svg>';
+
   for (var c=0;c<10;c++){
     var cat = document.createElement('div');
-    cat.className = 'cat';
-    cat.textContent = catEmojis[Math.floor(Math.random()*catEmojis.length)];
-    cat.style.fontSize = (16+Math.random()*18)+'px';
+    cat.className = 'cat-silhouette';
+    cat.innerHTML = catSilhouetteSVG(catColors[c % catColors.length]);
+    var catSize = 16 + Math.random()*22;
+    cat.style.width = catSize+'px';
     cat.style.left = (Math.random()*100)+'vw';
-    cat.style.animationDuration = (12+Math.random()*10)+'s';
-    cat.style.animationDelay = (Math.random()*14)+'s';
+    cat.style.animationDuration = (12+Math.random()*12)+'s';
+    cat.style.animationDelay = (Math.random()*16)+'s';
     heartsBg.appendChild(cat);
   }
+
+  for (var p=0;p<7;p++){
+    var paw = document.createElement('div');
+    paw.className = 'paw';
+    paw.innerHTML = pawSVG;
+    paw.style.color = Math.random() > .5 ? '#ffc3d3' : '#e8b86d';
+    paw.style.width = (10+Math.random()*9)+'px';
+    paw.style.left = (Math.random()*96)+'vw';
+    paw.style.top = (Math.random()*90)+'vh';
+    paw.style.setProperty('--rot', (Math.random()*50-25)+'deg');
+    paw.style.animationDuration = (4+Math.random()*4)+'s';
+    paw.style.animationDelay = (Math.random()*6)+'s';
+    heartsBg.appendChild(paw);
+  }
+
+  var walkBands = [6,14,22,30];
+  walkBands.forEach(function(bottom, idx){
+    var wrap = document.createElement('div');
+    var reverse = idx % 2 === 1;
+    wrap.className = 'cat-walk-wrap' + (reverse ? ' reverse' : '');
+    wrap.style.color = catColors[idx % catColors.length];
+    wrap.style.bottom = bottom+'%';
+    wrap.style.animationDuration = (20+Math.random()*10)+'s';
+    wrap.style.animationDelay = (idx*6 + Math.random()*8)+'s';
+    wrap.innerHTML = catWalkSVG;
+    heartsBg.appendChild(wrap);
+  });
 
   /* ================= note cards ================= */
   var notesGrid = document.getElementById('notesGrid');
